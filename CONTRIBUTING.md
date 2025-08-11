@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to Cashtric! We welcome contributions from the community and are excited to see what you'll bring to the project.
 
-## 🤝 How to Contribute
+## How to Contribute
 
 ### Reporting Bugs
 
@@ -106,7 +106,7 @@ flutter test
    - Address any feedback
    - Once approved, your PR will be merged
 
-## 🛠️ Development Setup
+## Development Setup
 
 ### Prerequisites
 - Flutter SDK (3.0+)
@@ -156,7 +156,7 @@ Cashtric/
 └── docs/                      # Documentation
 ```
 
-## 📋 Issue Labels
+## Issue Labels
 
 - `bug`: Something isn't working
 - `enhancement`: New feature or request
@@ -165,7 +165,7 @@ Cashtric/
 - `help wanted`: Extra attention is needed
 - `question`: Further information is requested
 
-## 🎯 Priority Areas
+## Priority Areas
 
 We're particularly interested in contributions in these areas:
 
@@ -176,17 +176,17 @@ We're particularly interested in contributions in these areas:
 5. **Accessibility**: Making the app more accessible
 6. **Internationalization**: Adding multi-language support
 
-## 📞 Getting Help
+## Getting Help
 
 - **GitHub Issues**: For bugs and feature requests
 - **Discussions**: For questions and general discussion
 - **Email**: For private inquiries
 
-## 🙏 Recognition
+## Recognition
 
 Contributors will be recognized in:
 - README.md contributors section
 - Release notes
 - Special thanks in major releases
 
-Thank you for contributing to Cashtric! 🎉
+Thank you for contributing to Cashtric!

@@ -1,4 +1,4 @@
-# 💰 Cashtric
+# Cashtric
 
 **Smart Expense Tracking with AI-Powered Receipt Scanning**
 
@@ -6,37 +6,37 @@ Cashtric is a modern, intuitive expense tracking app built with Flutter that rev
 
 ![Cashtric Logo](assets/icon/icon.png)
 
-## ✨ Features
+## Features
 
-### 🤖 AI-Powered Receipt Scanning
+### AI-Powered Receipt Scanning
 - **Smart OCR Technology**: Upload receipt images and automatically extract amount, merchant, date, and category
 - **High Accuracy**: Advanced ML Kit text recognition with intelligent fallback systems
 - **Instant Processing**: Quick and reliable data extraction from receipt images
 
-### 📊 Comprehensive Expense Management
+### Comprehensive Expense Management
 - **Multiple Categories**: Pre-defined categories including Food & Dining, Transportation, Shopping, Entertainment, and more
 - **Custom Transactions**: Manual entry with intuitive forms and date pickers
 - **Transaction History**: Complete overview of all your expenses with search and filter capabilities
 
-### 💳 Smart Budget Management
+### Smart Budget Management
 - **Category Budgets**: Set custom budgets for any expense category
 - **Visual Progress**: Clear progress bars showing budget utilization
 - **Overspend Alerts**: Red indicators when budgets are exceeded
 - **Budget Analytics**: Track spending patterns and budget performance
 
-### 📈 Advanced Analytics
+### Advanced Analytics
 - **Spending Insights**: Detailed charts and graphs showing expense patterns
 - **Category Breakdown**: Visual representation of spending by category
 - **Trend Analysis**: Track spending trends over time
 - **Export Capabilities**: Generate reports for financial planning
 
-### 🎨 Modern User Experience
+### Modern User Experience
 - **Clean Interface**: Intuitive design with Material Design principles
 - **Dark/Light Themes**: Customizable themes for comfortable viewing
 - **Responsive Design**: Optimized for all screen sizes
 - **Smooth Animations**: Polished user interactions and transitions
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Flutter SDK (3.0 or higher)
@@ -62,7 +62,7 @@ Cashtric is a modern, intuitive expense tracking app built with Flutter that rev
    flutter run
    ```
 
-## 📱 Screenshots
+## Screenshots
 
 ### Dashboard
 - Overview of recent transactions
@@ -84,7 +84,7 @@ Cashtric is a modern, intuitive expense tracking app built with Flutter that rev
 - Category breakdowns
 - Trend analysis
 
-## 🛠️ Technical Architecture
+## Technical Architecture
 
 ### Core Technologies
 - **Flutter**: Cross-platform mobile development
@@ -105,7 +105,7 @@ Cashtric is a modern, intuitive expense tracking app built with Flutter that rev
 - **Repository Pattern**: Data access layer
 - **Clean Architecture**: Separation of concerns
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 lib/
@@ -132,7 +132,7 @@ lib/
     └── categories.dart
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### App Icon
 The app icon is located at `assets/icon/icon.png`. To update:
@@ -153,7 +153,7 @@ class AppCategories {
 }
 ```
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please follow these steps:
 
@@ -169,23 +169,23 @@ We welcome contributions! Please follow these steps:
 - Update documentation for new features
 - Ensure backward compatibility
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👨‍💻 Author
+## Author
 
 **Aman Khanna**
 - GitHub: [@Khanna-Aman](https://github.com/Khanna-Aman)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Google ML Kit for OCR capabilities
 - Flutter team for the amazing framework
 - Material Design for UI guidelines
 - Open source community for inspiration
 
-## 📞 Support
+## Support
 
 If you encounter any issues or have questions:
 1. Check the [Issues](https://github.com/Khanna-Aman/Cashtric/issues) page
@@ -194,4 +194,4 @@ If you encounter any issues or have questions:
 
 ---
 
-**Made with ❤️ using Flutter**
+**Made with Flutter**
