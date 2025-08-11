@@ -75,10 +75,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## Contributing
+## About
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-## Support
-
-For support, please visit our [GitHub Issues](https://github.com/Khanna-Aman/Cashtric/issues) page.
+Cashtric is a personal project demonstrating modern mobile app development with Flutter, featuring AI-powered receipt scanning and comprehensive expense management capabilities.

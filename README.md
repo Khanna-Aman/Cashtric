@@ -141,33 +141,20 @@ The app icon is located at `assets/icon/icon.png`. To update:
 3. Rebuild the app
 
 ### Categories
-Expense categories can be customized in `lib/constants/categories.dart`:
+The app includes comprehensive expense categories defined in `lib/constants/categories.dart`:
 ```dart
 class AppCategories {
   static const List<String> expenseCategories = [
     'Food & Dining',
     'Transportation',
     'Shopping',
-    // Add your custom categories here
+    'Entertainment',
+    'Healthcare',
+    'Utilities',
+    // And more...
   ];
 }
 ```
-
-## Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-- Follow Flutter/Dart style guidelines
-- Write comprehensive tests
-- Update documentation for new features
-- Ensure backward compatibility
 
 ## License
 
@@ -183,15 +170,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Google ML Kit for OCR capabilities
 - Flutter team for the amazing framework
 - Material Design for UI guidelines
-- Open source community for inspiration
-
-## Support
-
-If you encounter any issues or have questions:
-1. Check the [Issues](https://github.com/Khanna-Aman/Cashtric/issues) page
-2. Create a new issue with detailed description
-3. Contact the maintainer
 
 ---
 
-**Made with Flutter**
+**Built with Flutter**
