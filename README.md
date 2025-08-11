@@ -164,12 +164,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Aman Khanna**
 - GitHub: [@Khanna-Aman](https://github.com/Khanna-Aman)
 
-## Acknowledgments
-
-- Google ML Kit for OCR capabilities
-- Flutter team for the amazing framework
-- Material Design for UI guidelines
-
 ---
 
 **Built with Flutter**
