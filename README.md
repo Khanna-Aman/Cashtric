@@ -4,7 +4,6 @@
 
 Cashtric is a modern, intuitive expense tracking app built with Flutter that revolutionizes how you manage your finances. With AI-powered receipt scanning, intelligent categorization, and comprehensive budget management, Cashtric makes expense tracking effortless and insightful.
 
-![Cashtric Logo](assets/icon/icon.png)
 
 ## Features
 
