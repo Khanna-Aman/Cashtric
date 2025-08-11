@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/transaction.dart';
 import '../services/transaction_service.dart';
 import '../constants/categories.dart';
-import 'scan_receipt_screen.dart';
+import 'upload_receipt_screen.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final bool? initialIsIncome;
@@ -71,14 +71,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.camera_alt, color: Colors.blue.shade700),
+                            Icon(Icons.upload_file,
+                                color: Colors.blue.shade700),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Scan Receipt',
+                                    'Upload Receipt',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -86,7 +87,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                     ),
                                   ),
                                   Text(
-                                    'Automatically extract amount and details',
+                                    'Upload receipt image and extract details automatically',
                                     style: TextStyle(
                                       color: Colors.blue.shade600,
                                       fontSize: 12,
@@ -96,9 +97,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               ),
                             ),
                             ElevatedButton.icon(
-                              onPressed: _scanReceipt,
-                              icon: const Icon(Icons.camera_alt, size: 18),
-                              label: const Text('Scan'),
+                              onPressed: _uploadReceipt,
+                              icon: const Icon(Icons.upload_file, size: 18),
+                              label: const Text('Upload'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue.shade700,
                                 foregroundColor: Colors.white,
@@ -322,16 +323,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
   }
 
-  Future<void> _scanReceipt() async {
+  Future<void> _uploadReceipt() async {
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => const ScanReceiptScreen(),
+        builder: (context) => const UploadReceiptScreen(),
       ),
     );
 
     if (result == true && mounted) {
-      // Receipt was successfully scanned and saved
+      // Receipt was successfully uploaded and saved
       Navigator.pop(context, true);
     }
   }

@@ -1,21 +1,21 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../services/camera_service.dart';
+import 'package:image_picker/image_picker.dart';
 import '../services/ocr_service.dart';
 import '../services/transaction_service.dart';
 import '../models/transaction.dart';
 import '../utils/date_formatter.dart';
 import '../constants/categories.dart';
 
-class ScanReceiptScreen extends StatefulWidget {
-  const ScanReceiptScreen({super.key});
+class UploadReceiptScreen extends StatefulWidget {
+  const UploadReceiptScreen({super.key});
 
   @override
-  State<ScanReceiptScreen> createState() => _ScanReceiptScreenState();
+  State<UploadReceiptScreen> createState() => _UploadReceiptScreenState();
 }
 
-class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
-  final CameraService _cameraService = CameraService();
+class _UploadReceiptScreenState extends State<UploadReceiptScreen> {
+  final ImagePicker _imagePicker = ImagePicker();
   final OCRService _ocrService = OCRService();
   final TransactionService _transactionService = TransactionService();
 
@@ -26,7 +26,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   // Form controllers for editing extracted data
   final _amountController = TextEditingController();
   final _descriptionController = TextEditingController();
-  String _selectedCategory = 'Other';
+  String _selectedCategory = 'Other Expenses';
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -40,21 +40,25 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan Receipt'),
+        title: const Text('Upload Receipt'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildImageSection(),
-            const SizedBox(height: 20),
-            if (_isProcessing) _buildProcessingIndicator(),
-            if (_extractedData != null) _buildExtractedDataForm(),
-            const SizedBox(height: 20),
-            _buildActionButtons(),
-          ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildImageSection(),
+              const SizedBox(height: 20),
+              if (_isProcessing) _buildProcessingIndicator(),
+              if (_extractedData != null) _buildExtractedDataForm(),
+              const SizedBox(height: 20),
+              _buildActionButtons(),
+              // Add extra bottom padding for navigation bar
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
+            ],
+          ),
         ),
       ),
     );
@@ -79,13 +83,13 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.camera_alt_outlined,
+                        Icons.upload_file,
                         size: 64,
                         color: Colors.grey,
                       ),
                       SizedBox(height: 16),
                       Text(
-                        'Tap to capture or select receipt image',
+                        'Upload receipt image from gallery',
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
@@ -142,24 +146,16 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
                 ),
               ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _captureImage,
-                    icon: const Icon(Icons.camera_alt),
-                    label: const Text('Camera'),
-                  ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.upload_file),
+                label: const Text('Upload from Gallery'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(16),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _pickImage,
-                    icon: const Icon(Icons.photo_library),
-                    label: const Text('Gallery'),
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
@@ -168,21 +164,31 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   }
 
   Widget _buildProcessingIndicator() {
-    return const Card(
+    return Card(
       child: Padding(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text(
-              'Processing receipt...',
-              style: TextStyle(fontSize: 16),
+            const CircularProgressIndicator(
+              strokeWidth: 3,
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 16),
+            const Text(
+              'Processing receipt...',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 8),
             Text(
-              'Extracting amount, merchant, and category',
-              style: TextStyle(color: Colors.grey),
+              'Extracting amount, merchant, date, and category',
+              style: TextStyle(color: Colors.grey.shade600),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(
+              backgroundColor: Colors.grey.shade200,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor,
+              ),
             ),
           ],
         ),
@@ -343,7 +349,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             child: OutlinedButton.icon(
               onPressed: _resetForm,
               icon: const Icon(Icons.refresh),
-              label: const Text('Scan Another Receipt'),
+              label: const Text('Upload Another Receipt'),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.all(16),
               ),
@@ -354,57 +360,27 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     );
   }
 
-  Future<void> _captureImage() async {
+  Future<void> _pickImage() async {
     try {
-      final file = await _cameraService.captureFromCamera();
-      if (file != null) {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 95, // Higher quality for better OCR
+        maxWidth: 3000, // Higher resolution for text recognition
+        maxHeight: 4000, // Allow taller images for receipts
+      );
+
+      if (image != null) {
         setState(() {
-          _selectedImage = file;
+          _selectedImage = File(image.path);
           _extractedData = null;
         });
 
-        // Show success message for real camera capture
+        // Show success message for gallery selection
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  '📸 Camera capture successful! Ready for OCR processing.'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
-        }
-      } else {
-        // User cancelled camera
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Camera capture cancelled'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      _showErrorSnackBar('Failed to capture image: $e');
-    }
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final file = await _cameraService.pickFromGallery();
-      if (file != null) {
-        setState(() {
-          _selectedImage = file;
-          _extractedData = null;
-        });
-
-        // Show success message for real gallery selection
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content:
-                  Text('🖼️ Gallery image selected! Ready for OCR processing.'),
+                  '🖼️ Receipt uploaded successfully! Ready for processing.'),
               backgroundColor: Colors.green,
               duration: Duration(seconds: 2),
             ),
@@ -415,20 +391,21 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Gallery selection cancelled'),
+              content: Text('Upload cancelled'),
               backgroundColor: Colors.orange,
             ),
           );
         }
       }
     } catch (e) {
-      _showErrorSnackBar('Failed to pick image: $e');
+      _showErrorSnackBar('Failed to upload image: $e');
     }
   }
 
   Future<void> _processImage() async {
     if (_selectedImage == null) return;
 
+    debugPrint('🔄 Starting OCR processing...');
     setState(() {
       _isProcessing = true;
     });
@@ -437,22 +414,68 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       final data =
           await _ocrService.extractTransactionFromImage(_selectedImage!);
 
+      debugPrint('📊 OCR processing completed. Data: $data');
+
       setState(() {
         _extractedData = data;
         _isProcessing = false;
 
         if (data != null) {
-          _amountController.text = data['amount']?.toString() ?? '';
-          _descriptionController.text = data['description'] ?? '';
-          _selectedCategory = data['category'] ?? 'Other';
+          // Set amount
+          final amount = data['amount'];
+          _amountController.text = amount?.toString() ?? '';
+          debugPrint('💰 Amount extracted: $amount');
+
+          // Set description
+          final description = data['description'] ?? '';
+          _descriptionController.text = description;
+          debugPrint('📝 Description extracted: $description');
+
+          // Validate and set category
+          final extractedCategory = data['category'] as String?;
+          if (extractedCategory != null &&
+              AppCategories.expenseCategories.contains(extractedCategory)) {
+            _selectedCategory = extractedCategory;
+            debugPrint('🏷️ Category set to: $extractedCategory');
+          } else {
+            _selectedCategory = 'Other Expenses';
+            debugPrint(
+                '🏷️ Category defaulted to: Other Expenses (extracted: $extractedCategory)');
+          }
+
+          // Use extracted date if available, otherwise keep current date
+          if (data['date'] != null) {
+            try {
+              _selectedDate = DateTime.parse(data['date']);
+              debugPrint('📅 Date extracted: ${_selectedDate.toString()}');
+            } catch (e) {
+              // If date parsing fails, keep current date
+              debugPrint('❌ Date parsing error: $e');
+              _selectedDate = DateTime.now();
+            }
+          } else {
+            debugPrint('📅 No date extracted, using current date');
+          }
         }
       });
 
       if (data == null) {
         _showErrorSnackBar(
             'Could not extract data from receipt. Please enter manually.');
+      } else {
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Receipt processed successfully!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       }
     } catch (e) {
+      debugPrint('❌ OCR processing error: $e');
       setState(() {
         _isProcessing = false;
       });
@@ -514,7 +537,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       _extractedData = null;
       _amountController.clear();
       _descriptionController.clear();
-      _selectedCategory = 'Other';
+      _selectedCategory = 'Other Expenses';
       _selectedDate = DateTime.now();
     });
   }

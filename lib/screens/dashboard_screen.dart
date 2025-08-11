@@ -40,7 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Finance Tracker'),
+        title: const Text('Cashtric'),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),

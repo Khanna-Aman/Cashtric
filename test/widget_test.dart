@@ -7,14 +7,14 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:finance_tracker/main.dart';
+import 'package:cashtric/main.dart';
 
 void main() {
-  testWidgets('Finance Tracker app smoke test', (WidgetTester tester) async {
+  testWidgets('Cashtric app smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const FinanceTrackerApp());
+    await tester.pumpWidget(const CashtricApp());
 
     // Verify that the app loads successfully.
-    expect(find.text('Finance Tracker'), findsOneWidget);
+    expect(find.text('Cashtric'), findsOneWidget);
   });
 }

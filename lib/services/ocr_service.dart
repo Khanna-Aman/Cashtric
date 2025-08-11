@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
@@ -16,23 +16,25 @@ class OCRService {
   Future<Map<String, dynamic>?> extractTransactionFromImage(
       File imageFile) async {
     try {
-      // First try real OCR with ML Kit
+      // Process uploaded image with ML Kit OCR
       final inputImage = InputImage.fromFile(imageFile);
       final recognizedText = await _textRecognizer.processImage(inputImage);
 
       if (recognizedText.text.isNotEmpty) {
         // Real OCR succeeded - parse the actual text
-        print('✅ OCR Success: Found ${recognizedText.text.length} characters');
-        print(
+        debugPrint(
+            '✅ OCR Success: Found ${recognizedText.text.length} characters');
+        debugPrint(
             '📄 Recognized text: ${recognizedText.text.substring(0, min(100, recognizedText.text.length))}...');
+
         return _parseTransactionData(recognizedText.text);
       } else {
         // OCR returned empty - fallback to intelligent analysis
-        print('⚠️ OCR returned empty text - using intelligent fallback');
+        debugPrint('⚠️ OCR returned empty text - using intelligent fallback');
         return _generateIntelligentFallback(imageFile);
       }
     } catch (e) {
-      print('❌ OCR Error: $e - using intelligent fallback');
+      debugPrint('❌ OCR Error: $e - using intelligent fallback');
       // OCR failed - fallback to intelligent analysis based on image properties
       return _generateIntelligentFallback(imageFile);
     }
@@ -48,11 +50,11 @@ class OCRService {
       // Generate intelligent receipt data based on real image properties
       final intelligentText = _generateIntelligentReceiptText(imageAnalysis);
 
-      print(
+      debugPrint(
           '🧠 Advanced Analysis: Generated intelligent data from image properties');
       return _parseTransactionData(intelligentText);
     } catch (e) {
-      print('⚠️ Fallback Error: $e - using basic demo');
+      debugPrint('⚠️ Fallback Error: $e - using basic demo');
       // Final fallback to basic demo data
       final simulatedText = _generateSampleReceiptText();
       return _parseTransactionData(simulatedText);
@@ -83,12 +85,7 @@ class OCRService {
       final textDensity = _estimateTextDensity(image);
 
       // Determine image source and quality
-      String source = 'unknown';
-      if (imageFile.path.contains('camera')) {
-        source = 'camera';
-      } else if (imageFile.path.contains('gallery')) {
-        source = 'gallery';
-      }
+      String source = 'gallery'; // All images are now from gallery upload
 
       // Classify image type based on analysis
       String imageType = 'receipt';
@@ -111,7 +108,7 @@ class OCRService {
         'timestamp': DateTime.now().millisecondsSinceEpoch.toString(),
       };
     } catch (e) {
-      print('Image analysis error: $e');
+      debugPrint('Image analysis error: $e');
       // Return basic analysis
       return await _analyzeImageProperties(imageFile);
     }
@@ -214,7 +211,7 @@ class OCRService {
         'fileName': fileName,
         'fileSize': fileSize.toString(),
         'timestamp': lastModified.toString(),
-        'source': fileName.contains('camera') ? 'camera' : 'gallery',
+        'source': 'gallery', // All images are now from gallery upload
       };
     } catch (e) {
       return {
@@ -231,7 +228,6 @@ class OCRService {
     final random = Random();
 
     // Use image properties to influence merchant selection
-    final source = imageData['source'] ?? 'unknown';
     final fileSize = int.tryParse(imageData['fileSize'] ?? '0') ?? 0;
 
     // Larger files might be higher quality photos = more expensive places
@@ -260,11 +256,9 @@ class OCRService {
       amounts = [12.50, 8.99, 23.45, 67.34];
     }
 
-    // Camera photos might be more recent purchases
-    if (source == 'camera') {
-      merchants.addAll(['UBER EATS', 'DOORDASH', 'LOCAL RESTAURANT']);
-      amounts.addAll([28.50, 35.75, 42.30]);
-    }
+    // Add some variety for uploaded receipts
+    merchants.addAll(['UBER EATS', 'DOORDASH', 'LOCAL RESTAURANT']);
+    amounts.addAll([28.50, 35.75, 42.30]);
 
     final merchant = merchants[random.nextInt(merchants.length)];
     final amount = amounts[random.nextInt(amounts.length)];
@@ -326,8 +320,9 @@ THANK YOU FOR YOUR BUSINESS!
 
     double? amount;
     String? merchant;
-    String category = 'Other';
+    String category = 'Other Expenses';
     String description = '';
+    DateTime? extractedDate;
 
     // Extract amount (look for currency symbols and numbers)
     amount = _extractAmount(text);
@@ -335,14 +330,14 @@ THANK YOU FOR YOUR BUSINESS!
     // Extract merchant name (usually at the top of receipt)
     merchant = _extractMerchant(lines);
 
+    // Extract date from receipt
+    extractedDate = _extractDate(text);
+
     // Determine category based on merchant/content
     category = _determineCategory(text, merchant);
 
-    // Create description
+    // Create description (just the merchant name, no amount)
     description = merchant ?? 'Receipt scan';
-    if (amount != null) {
-      description += ' - ${amount.toStringAsFixed(2)}';
-    }
 
     return {
       'amount': amount,
@@ -351,19 +346,29 @@ THANK YOU FOR YOUR BUSINESS!
       'merchant': merchant,
       'confidence': _calculateConfidence(amount, merchant),
       'rawText': text,
+      'date': extractedDate?.toIso8601String(),
     };
   }
 
   /// Extract monetary amount from text
   double? _extractAmount(String text) {
-    // Common currency patterns
+    // Enhanced currency patterns for Indian receipts
     final patterns = [
-      RegExp(r'\$\s*(\d+\.?\d*)', caseSensitive: false),
-      RegExp(r'(\d+\.?\d*)\s*\$', caseSensitive: false),
-      RegExp(r'total[:\s]*\$?\s*(\d+\.?\d*)', caseSensitive: false),
-      RegExp(r'amount[:\s]*\$?\s*(\d+\.?\d*)', caseSensitive: false),
-      RegExp(r'(\d+\.\d{2})',
-          caseSensitive: false), // Any decimal with 2 places
+      // Look for TOTAL, BALANCE DUE, etc. with amounts (highest priority)
+      RegExp(
+          r'(?:total|balance\s+due|amount\s+due|grand\s+total)[:\s]*(?:inr\s*)?[₹$]?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+          caseSensitive: false),
+      // Look for INR amounts specifically
+      RegExp(r'inr\s*[₹]?\s*(\d+(?:,\d{3})*(?:\.\d{2})?)',
+          caseSensitive: false),
+      // Look for rupee symbol with amounts
+      RegExp(r'₹\s*(\d+(?:,\d{3})*(?:\.\d{2})?)', caseSensitive: false),
+      // Look for dollar symbol with amounts
+      RegExp(r'\$\s*(\d+(?:,\d{3})*(?:\.\d{2})?)', caseSensitive: false),
+      // Look for amounts with commas (Indian number format)
+      RegExp(r'(\d+(?:,\d{3})*\.\d{2})', caseSensitive: false),
+      // Look for simple decimal amounts
+      RegExp(r'(\d+\.\d{2})', caseSensitive: false),
     ];
 
     double? maxAmount;
@@ -371,7 +376,7 @@ THANK YOU FOR YOUR BUSINESS!
     for (final pattern in patterns) {
       final matches = pattern.allMatches(text);
       for (final match in matches) {
-        final amountStr = match.group(1);
+        final amountStr = match.group(1)?.replaceAll(',', ''); // Remove commas
         if (amountStr != null) {
           final amount = double.tryParse(amountStr);
           if (amount != null && amount > 0) {
@@ -387,19 +392,107 @@ THANK YOU FOR YOUR BUSINESS!
     return maxAmount;
   }
 
+  /// Extract date from receipt text
+  DateTime? _extractDate(String text) {
+    // Common date patterns found on receipts
+    final patterns = [
+      // Aug 7, 2025 format (highest priority)
+      RegExp(
+          r'(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2}),?\s+(\d{4})',
+          caseSensitive: false),
+      // DATE: Aug 7, 2025 format
+      RegExp(
+          r'date[:\s]+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2}),?\s+(\d{4})',
+          caseSensitive: false),
+      // 2025-08-07 format (ISO format)
+      RegExp(r'(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})'),
+      // 07/08/2025, 7/8/2025 format (US format)
+      RegExp(r'(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})'),
+    ];
+
+    final monthMap = {
+      'jan': 1,
+      'january': 1,
+      'feb': 2,
+      'february': 2,
+      'mar': 3,
+      'march': 3,
+      'apr': 4,
+      'april': 4,
+      'may': 5,
+      'jun': 6,
+      'june': 6,
+      'jul': 7,
+      'july': 7,
+      'aug': 8,
+      'august': 8,
+      'sep': 9,
+      'september': 9,
+      'oct': 10,
+      'october': 10,
+      'nov': 11,
+      'november': 11,
+      'dec': 12,
+      'december': 12
+    };
+
+    for (int i = 0; i < patterns.length; i++) {
+      final pattern = patterns[i];
+      final match = pattern.firstMatch(text.toLowerCase());
+      if (match != null) {
+        try {
+          if (i < 2) {
+            // Month name formats (patterns 0 and 1)
+            final monthName = match.group(1)!.toLowerCase();
+            final day = int.parse(match.group(2)!);
+            final year = int.parse(match.group(3)!);
+            final month = monthMap[monthName];
+            if (month != null) {
+              return DateTime(year, month, day);
+            }
+          } else if (i == 2) {
+            // ISO format: YYYY-MM-DD
+            final year = int.parse(match.group(1)!);
+            final month = int.parse(match.group(2)!);
+            final day = int.parse(match.group(3)!);
+            if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+              return DateTime(year, month, day);
+            }
+          } else {
+            // US format: MM/DD/YYYY
+            final month = int.parse(match.group(1)!);
+            final day = int.parse(match.group(2)!);
+            final year = int.parse(match.group(3)!);
+            if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+              return DateTime(year, month, day);
+            }
+          }
+        } catch (e) {
+          continue; // Try next pattern
+        }
+      }
+    }
+
+    return null; // No date found
+  }
+
   /// Extract merchant name from receipt
   String? _extractMerchant(List<String> lines) {
     if (lines.isEmpty) return null;
 
-    // Usually the merchant name is in the first few lines
-    for (int i = 0; i < lines.length && i < 5; i++) {
-      final line = lines[i];
-      // Skip lines that look like addresses, phone numbers, or common receipt headers
-      if (!_isLikelyMerchantName(line)) continue;
+    // Look for merchant name in the first few lines
+    for (int i = 0; i < lines.length && i < 8; i++) {
+      final line = lines[i].trim();
 
-      // Clean up the merchant name
-      final cleaned = line.replaceAll(RegExp(r'[^\w\s]'), '').trim();
-      if (cleaned.length > 2 && cleaned.length < 50) {
+      // Skip empty lines
+      if (line.isEmpty) continue;
+
+      // Skip lines that are clearly not merchant names
+      if (_shouldSkipLine(line)) continue;
+
+      // Clean up the line and check if it looks like a merchant name
+      final cleaned = _cleanMerchantName(line);
+      if (_isValidMerchantName(cleaned)) {
         return cleaned;
       }
     }
@@ -407,18 +500,52 @@ THANK YOU FOR YOUR BUSINESS!
     return null;
   }
 
-  /// Check if a line is likely to be a merchant name
-  bool _isLikelyMerchantName(String line) {
+  /// Check if a line should be skipped when looking for merchant name
+  bool _shouldSkipLine(String line) {
     final lowerLine = line.toLowerCase();
 
-    // Skip common non-merchant patterns
-    if (lowerLine.contains(RegExp(r'\d{3}-\d{3}-\d{4}'))) return false; // Phone
-    if (lowerLine.contains(RegExp(r'\d+\s+\w+\s+(st|ave|rd|blvd|dr)'))) {
-      return false; // Address
+    // Skip lines with only numbers or very short text
+    if (line.length < 3 || RegExp(r'^\d+$').hasMatch(line)) return true;
+
+    // Skip common receipt headers and footers
+    if (lowerLine.contains(RegExp(
+        r'(receipt|invoice|bill|thank you|total|subtotal|tax|date|time)'))) {
+      return true;
     }
-    if (lowerLine.contains('receipt')) return false;
-    if (lowerLine.contains('thank you')) return false;
-    if (lowerLine.length < 3 || lowerLine.length > 40) return false;
+
+    // Skip addresses and phone numbers
+    if (lowerLine.contains(RegExp(r'\d{3}-\d{3}-\d{4}'))) {
+      return true; // Phone
+    }
+    if (lowerLine.contains(
+        RegExp(r'\d+\s+\w+\s+(st|ave|rd|blvd|dr|street|avenue|road)'))) {
+      return true; // Address
+    }
+
+    // Skip email addresses
+    if (lowerLine.contains('@')) return true;
+
+    // Skip postal codes and numbers
+    if (RegExp(r'^\d{5,6}$').hasMatch(line)) return true;
+
+    return false;
+  }
+
+  /// Clean merchant name by removing unwanted characters
+  String _cleanMerchantName(String line) {
+    // Remove special characters but keep spaces and basic punctuation
+    return line.replaceAll(RegExp(r'[^\w\s&\-\.]'), '').trim();
+  }
+
+  /// Check if cleaned text is a valid merchant name
+  bool _isValidMerchantName(String cleaned) {
+    if (cleaned.length < 3 || cleaned.length > 50) return false;
+
+    // Should contain at least one letter
+    if (!RegExp(r'[a-zA-Z]').hasMatch(cleaned)) return false;
+
+    // Should not be all numbers
+    if (RegExp(r'^\d+$').hasMatch(cleaned)) return false;
 
     return true;
   }
@@ -510,7 +637,7 @@ THANK YOU FOR YOUR BUSINESS!
       return 'Entertainment';
     }
 
-    return 'Other';
+    return 'Other Expenses';
   }
 
   /// Helper method to check if text contains any of the given keywords

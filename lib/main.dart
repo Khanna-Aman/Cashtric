@@ -12,17 +12,17 @@ void main() {
   CurrencyService.instance.init();
   ThemeService.instance.init();
   BudgetService.instance.init();
-  runApp(const FinanceTrackerApp());
+  runApp(const CashtricApp());
 }
 
-class FinanceTrackerApp extends StatefulWidget {
-  const FinanceTrackerApp({super.key});
+class CashtricApp extends StatefulWidget {
+  const CashtricApp({super.key});
 
   @override
-  State<FinanceTrackerApp> createState() => _FinanceTrackerAppState();
+  State<CashtricApp> createState() => _CashtricAppState();
 }
 
-class _FinanceTrackerAppState extends State<FinanceTrackerApp> {
+class _CashtricAppState extends State<CashtricApp> {
   final ThemeService _themeService = ThemeService.instance;
 
   @override
@@ -44,7 +44,7 @@ class _FinanceTrackerAppState extends State<FinanceTrackerApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Finance Tracker',
+      title: 'Cashtric',
       debugShowCheckedModeBanner: false,
       themeMode: _themeService.flutterThemeMode,
       theme: _buildLightTheme(),
